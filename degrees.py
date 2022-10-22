@@ -85,19 +85,19 @@ def main():
             print(f"{i + 1}: {person1} and {person2} starred in {movie}")
 
 
-def same_movie(source, target):
+def same_movie(neighbors, target):
     """
     testjpf
     tom hanks (source) = 158
     sally field (target) = 398
     forest gump (targets movie) = 109830
     """
-    # testjpf
-    # get neigbors
-    neighbors = neighbors_for_person(source)
+
     # see if taget is in neighbors.
     # neighbors
+    print(target)
     for neighbor in neighbors:
+        print(neighbor[1])
         if neighbor[1] == target:
             """
             need to return in a format like:
@@ -106,9 +106,12 @@ def same_movie(source, target):
             my EX: [(109830,398)]
             """
             return neighbor
+    return (-1, -1)
 
 
-def shortest_path(source, target):
+def shortest_path(actorA, actorZ):
+    actions = []
+    solution = []
     """
     Returns the shortest list of (movie_id, person_id) pairs
     that connect the source to the target.
@@ -119,7 +122,6 @@ def shortest_path(source, target):
 
     first logical step is to see if they've been in a movie together
 
-
     """
     # Keep track of number of states explored
     num_explored = 0
@@ -129,28 +131,67 @@ def shortest_path(source, target):
     source? Ex: Tom Hanks SOURCE NEIGHBORS?!!?!
     """
 
-    sourceNeighbors = neighbors_for_person(source)
     # Initialize frontier to just the starting position
-    start = Node(state=source, parent=None,
-                 action=same_movie(source, target))
-    frontier = QueueFrontier()
+    """
+    state could be true or false?testjpf
+    state is true they star in a movie actorZ or false
+    """
+    sourceNeighbors = neighbors_for_person(actorA)
+    starTogether = same_movie(sourceNeighbors, actorZ)
+    print(starTogether)
+    if starTogether[1] == actorZ:
+        print("STARTOGETHER")
+        actions.append(starTogether)
+    start = Node(state=actorA, parent=None, action=starTogether)
 
+    """
+    loop thru neighbors check to see if it solves, if not create a node for it and add source as parent
+    """
+    frontier = QueueFrontier()
     frontier.add(start)
 
     # Initialize an empty explored set
     explored = set()
 
-    # Keep looping until solution found
-    # while True:
+    solved = False
 
-    print(start.action)
-    if len(start.action) > 0 and start.action[1] == target:
-        """
-        steal from maze.py ln: 145 testjpf
-        """
-        return [start.action]
-    else:
-        raise NotImplementedError
+    while solved == False:
+        # If nothing left in frontier, then no path
+        if frontier.empty():
+            raise Exception("no solution")
+
+        # Choose a node from the frontier
+        node = frontier.remove()
+        num_explored += 1
+
+        if node.action[1] == actorZ:
+            print(actions)
+            """
+            steal from maze.py ln: 145 testjpf
+            """
+
+            while node.parent is not None:
+                actions.append(node.action)
+                node = node.parent
+            solved = True
+        else:
+            # Add neighbors to frontier
+            """
+            what is my action?!?!? TESTJPF
+            action = [Movie_id, (starred with) person_id]
+            """
+            sourceNeighbors = neighbors_for_person(node.state)
+            for neighbor in sourceNeighbors:
+                # this conditional is where you'd check to see if ylu already know that this neighbor hasn't starred in a movie with actorZ
+                if not frontier.contains_state(node.state) and node.state not in explored:
+                    child = Node(state=neighbor[1],
+                                 parent=node, action=neighbor)
+                    frontier.add(child)
+    actions.reverse()
+    print("action reverse")
+    print(actions)
+    if actions[0] != -1:
+        return actions
 
 
 def person_id_for_name(name):

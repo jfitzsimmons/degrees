@@ -12,12 +12,6 @@ people = {}
 # Maps movie_ids to a dictionary of: title, year, stars (a set of person_ids)
 movies = {}
 # tracker testjpf
-node = {
-    "state": {},
-    "parent": {},
-    "action": {},
-    "cost": {}
-}
 
 
 def load_data(directory):
@@ -127,10 +121,34 @@ def shortest_path(source, target):
 
 
     """
-    same = same_movie(source, target)
-    print(same)
-    if len(same) > 0:
-        return [same]
+    # Keep track of number of states explored
+    num_explored = 0
+
+    """
+    what is my start.state? TESTJPF
+    source? Ex: Tom Hanks SOURCE NEIGHBORS?!!?!
+    """
+
+    sourceNeighbors = neighbors_for_person(source)
+    # Initialize frontier to just the starting position
+    start = Node(state=source, parent=None,
+                 action=same_movie(source, target))
+    frontier = QueueFrontier()
+
+    frontier.add(start)
+
+    # Initialize an empty explored set
+    explored = set()
+
+    # Keep looping until solution found
+    # while True:
+
+    print(start.action)
+    if len(start.action) > 0 and start.action[1] == target:
+        """
+        steal from maze.py ln: 145 testjpf
+        """
+        return [start.action]
     else:
         raise NotImplementedError
 

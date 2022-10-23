@@ -11,7 +11,6 @@ people = {}
 
 # Maps movie_ids to a dictionary of: title, year, stars (a set of person_ids)
 movies = {}
-# tracker testjpf
 
 
 def load_data(directory):
@@ -85,113 +84,59 @@ def main():
             print(f"{i + 1}: {person1} and {person2} starred in {movie}")
 
 
-def same_movie(neighbors, target):
-    """
-    testjpf
-    tom hanks (source) = 158
-    sally field (target) = 398
-    forest gump (targets movie) = 109830
-    """
-
-    # see if taget is in neighbors.
-    # neighbors
-    print(target)
-    for neighbor in neighbors:
-        print(neighbor[1])
-        if neighbor[1] == target:
-            """
-            need to return in a format like:
-            [(1, 2), (3, 4)], that would mean that the source starred in movie 1 with person 2, person 2 starred in movie 3 with person 4, and person 4 is the target.
-
-            my EX: [(109830,398)]
-            """
-            return neighbor
-    return (-1, -1)
-
-
 def shortest_path(actorA, actorZ):
+    """
+    @state: ID that can be CRUDed from frontier
+    """
+    start = Node(state=actorA, parent=None, action=(None, None))
     actions = []
-    solution = []
-    """
-    Returns the shortest list of (movie_id, person_id) pairs
-    that connect the source to the target.
-
-    If no possible path, returns None.
-
-    testjpf
-
-    first logical step is to see if they've been in a movie together
-
-    """
-    # Keep track of number of states explored
     num_explored = 0
-
-    """
-    what is my start.state? TESTJPF
-    source? Ex: Tom Hanks SOURCE NEIGHBORS?!!?!
-    """
-
-    # Initialize frontier to just the starting position
-    """
-    state could be true or false?testjpf
-    state is true they star in a movie actorZ or false
-    """
-    sourceNeighbors = neighbors_for_person(actorA)
-    starTogether = same_movie(sourceNeighbors, actorZ)
-    print(starTogether)
-    if starTogether[1] == actorZ:
-        print("STARTOGETHER")
-        actions.append(starTogether)
-    start = Node(state=actorA, parent=None, action=starTogether)
-
-    """
-    loop thru neighbors check to see if it solves, if not create a node for it and add source as parent
-    """
     frontier = QueueFrontier()
-    frontier.add(start)
-
-    # Initialize an empty explored set
     explored = set()
-
     solved = False
+
+    frontier.add(start)
 
     while solved == False:
         # If nothing left in frontier, then no path
         if frontier.empty():
-            raise Exception("no solution")
+            print("num_explored: ", num_explored)
+            return None
 
         # Choose a node from the frontier
         node = frontier.remove()
         num_explored += 1
+        neighbors = neighbors_for_person(node.state)
 
-        if node.action[1] == actorZ:
-            print(actions)
-            """
-            steal from maze.py ln: 145 testjpf
-            """
-
-            while node.parent is not None:
-                actions.append(node.action)
-                node = node.parent
-            solved = True
-        else:
-            # Add neighbors to frontier
-            """
-            what is my action?!?!? TESTJPF
-            action = [Movie_id, (starred with) person_id]
-            """
-            sourceNeighbors = neighbors_for_person(node.state)
-            for neighbor in sourceNeighbors:
-                # this conditional is where you'd check to see if ylu already know that this neighbor hasn't starred in a movie with actorZ
-                if not frontier.contains_state(node.state) and node.state not in explored:
+        explored.add(node.state)
+        for neighbor in neighbors:
+            # testjpf i think it's going to turn out that it's more efficient to check if Z belongs to neighbors first before exploring the frontier
+            # SOOOOO, dont add to frontier until after all neighbors are collected and your sure the targets isn't one of them?!?!?!
+            # LOG STEPS!!! for  jlaw / old tom holland
+            if neighbor[1] == actorZ:
+                actions.append(neighbor)
+                while node.parent is not None:
+                    actions.append(node.action)
+                    node = node.parent
+                solved = True
+                break
+            else:
+                if not frontier.contains_state(neighbor[1]) and neighbor[1] not in explored:
+                    print("child ", num_explored, ": ", neighbor[1])
                     child = Node(state=neighbor[1],
                                  parent=node, action=neighbor)
+                    # SOOOOO, dont add to frontier until after all neighbors are collected and your sure the targets isn't one of them?!?!?!
+                    # use temp list?!?!? TESTJPF
                     frontier.add(child)
+
     actions.reverse()
-    print("action reverse")
-    print(actions)
-    if actions[0] != -1:
-        return actions
+
+    """
+    need to return in this format:
+    [(1, 2), (3, 4)], that would mean that the source starred in movie 1 with person 2, person 2 starred in movie 3 with person 4, and person 4 is the target.
+    """
+    print("num_explored: ", num_explored)
+    return actions
 
 
 def person_id_for_name(name):

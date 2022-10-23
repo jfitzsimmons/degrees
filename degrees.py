@@ -100,7 +100,7 @@ def shortest_path(actorA, actorZ):
     while solved == False:
         # If nothing left in frontier, then no path
         if frontier.empty():
-            print("num_explored: ", num_explored)
+            print("nodes explored: ", num_explored)
             return None
 
         # Choose a node from the frontier
@@ -110,9 +110,6 @@ def shortest_path(actorA, actorZ):
 
         explored.add(node.state)
         for neighbor in neighbors:
-            # testjpf i think it's going to turn out that it's more efficient to check if Z belongs to neighbors first before exploring the frontier
-            # SOOOOO, dont add to frontier until after all neighbors are collected and your sure the targets isn't one of them?!?!?!
-            # LOG STEPS!!! for  jlaw / old tom holland
             if neighbor[1] == actorZ:
                 actions.append(neighbor)
                 while node.parent is not None:
@@ -122,20 +119,18 @@ def shortest_path(actorA, actorZ):
                 break
             else:
                 if not frontier.contains_state(neighbor[1]) and neighbor[1] not in explored:
-                    print("child ", num_explored, ": ", neighbor[1])
                     child = Node(state=neighbor[1],
                                  parent=node, action=neighbor)
-                    # SOOOOO, dont add to frontier until after all neighbors are collected and your sure the targets isn't one of them?!?!?!
-                    # use temp list?!?!? TESTJPF
                     frontier.add(child)
 
+    print("nodes explored: ", num_explored)
     actions.reverse()
 
     """
     need to return in this format:
     [(1, 2), (3, 4)], that would mean that the source starred in movie 1 with person 2, person 2 starred in movie 3 with person 4, and person 4 is the target.
     """
-    print("num_explored: ", num_explored)
+
     return actions
 
 

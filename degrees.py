@@ -1,3 +1,18 @@
+"""
+TESTJPF
+
+took 5566 nodes to explore without refinements
+jlaw / old tom holland
+4 degrees of separation
+
+num_explored:  4618 with look ahead
+
+is try 2 the same????
+
+........
+
+"""
+
 import csv
 import sys
 
@@ -87,6 +102,12 @@ def main():
 def shortest_path(actorA, actorZ):
     """
     @state: ID that can be CRUDed from frontier
+
+    testjpf
+    change state to include wheter it's going from a to z or z to a
+    this will determine if actions should be reversed.
+    condition for solve will have to check against actorA instead
+    need actions array for both A and Z
     """
     start = Node(state=actorA, parent=None, action=(None, None))
     actions = []
@@ -108,6 +129,8 @@ def shortest_path(actorA, actorZ):
         num_explored += 1
         neighbors = neighbors_for_person(node.state)
 
+        tempNeighbors = []
+
         explored.add(node.state)
         for neighbor in neighbors:
             # testjpf i think it's going to turn out that it's more efficient to check if Z belongs to neighbors first before exploring the frontier
@@ -121,13 +144,28 @@ def shortest_path(actorA, actorZ):
                 solved = True
                 break
             else:
-                if not frontier.contains_state(neighbor[1]) and neighbor[1] not in explored:
-                    print("child ", num_explored, ": ", neighbor[1])
-                    child = Node(state=neighbor[1],
-                                 parent=node, action=neighbor)
-                    # SOOOOO, dont add to frontier until after all neighbors are collected and your sure the targets isn't one of them?!?!?!
-                    # use temp list?!?!? TESTJPF
-                    frontier.add(child)
+                tempNeighbors.append(neighbor)
+
+        for neighbor in tempNeighbors:
+            if not frontier.contains_state(neighbor[1]) and neighbor[1] not in explored:
+                print("child ", num_explored, ": ", neighbor[1])
+                child = Node(state=neighbor[1],
+                             parent=node, action=neighbor)
+                # SOOOOO, dont add to frontier until after all neighbors are collected and your sure the targets isn't one of them?!?!?!
+                # use temp list?!?!? TESTJPF
+                """
+                    testjpf sratch previous!!!
+                    have a lookAhead function to see if this persons neighbors has ActorZ in it? will the extar loop hit performance? I don't think so.
+                    my question is, as the frontier is getting larger, the cost of doing this else check gets very expensive?!?!?
+                    multiple frontiers??! google solutions??
+
+                    is the answer a* search?!?!?
+                    I'm sure it is.
+                    one bound would be track the max length neighbors could be
+                    """
+                frontier.add(child)
+
+        tempNeighbors.clear()
 
     actions.reverse()
 

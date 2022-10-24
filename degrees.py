@@ -3,6 +3,16 @@ import sys
 
 from util import Node, StackFrontier, QueueFrontier
 
+"""TESTJPF
+The new algorithm, called expected value navigation (EVN), works by always passing a message to the node that has the highest probability of linking to the target. The probability is calculated from the number of links the next potential node boasts – or its “degree” – and from its similarity, or “homophily”, to the target.
+
+Could be greeedy, but not a*?!?!?:::
+sort by  WITH MOST NEIGHBORS, Large amount of neighbors, means each on eis UNIQUE (at first, but still most likely to be unique)
+sort by amount of neighbors
+flatten
+then remove dupes
+"""
+
 # Maps names to a set of corresponding person_ids
 names = {}
 
@@ -88,16 +98,18 @@ def shortest_path(actorA, actorZ):
     """
     @state: ID that can be CRUDed from frontier
     """
-    start = Node(state=actorA, parent=None, action=(None, None))
+    startZ = Node(state=(actorZ, "z"), parent=None, action=(None, None))
+    startA = Node(state=(actorA, "a"), parent=None, action=(None, None))
     actions = []
     num_explored = 0
     frontier = QueueFrontier()
     explored = set()
-    solved = False
+    solver = None
 
-    frontier.add(start)
+    frontier.add(startZ)
+    frontier.add(startA)
 
-    while solved == False:
+    while solver == None:
         # If nothing left in frontier, then no path
         if frontier.empty():
             print("nodes explored: ", num_explored)
@@ -106,25 +118,52 @@ def shortest_path(actorA, actorZ):
         # Choose a node from the frontier
         node = frontier.remove()
         num_explored += 1
-        neighbors = neighbors_for_person(node.state)
 
-        explored.add(node.state)
+        print("fart", node.state[0])
+        neighbors = neighbors_for_person(node.state[0])
+        print("fart222")
+        if node.state[1] == "a":
+            target = actorZ
+        else:
+            target = actorA
+
+        tempNeighbors = []
+
+        explored.add(node.state[0])
         for neighbor in neighbors:
-            if neighbor[1] == actorZ:
-                actions.append(neighbor)
+            if neighbor[1] == target:
+                if node.state[1] == "z":
+                    actions.append((neighbor[0], node.state[0]))
+                else:
+                    actions.append(neighbor)
                 while node.parent is not None:
-                    actions.append(node.action)
+                    if node.state[1] == "z":
+                        actions.append((node.action[0], node.parent.state[0]))
+                    else:
+                        actions.append(node.action)
                     node = node.parent
-                solved = True
+                solver = node.state[1]
                 break
             else:
-                if not frontier.contains_state(neighbor[1]) and neighbor[1] not in explored:
-                    child = Node(state=neighbor[1],
-                                 parent=node, action=neighbor)
-                    frontier.add(child)
+                tempNeighbors.append(neighbor)
+
+        flatNoDupes = list(
+            set([item for sublist in tempNeighbors for item in sublist]))
+
+        print(flatNoDupes)
+
+        for neighbor in flatNoDupes:
+            if not frontier.contains_state(neighbor[1]) and neighbor[1] not in explored:
+                child = Node(state=(neighbor[1], node.state[1]),
+                             parent=node, action=neighbor)
+                frontier.add(child)
+
+        tempNeighbors.clear()
 
     print("nodes explored: ", num_explored)
-    actions.reverse()
+    print("solver: ", solver)
+    if solver == "a":
+        actions.reverse()
 
     """
     need to return in this format:
